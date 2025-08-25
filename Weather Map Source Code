@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Weather Map</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌤</text></svg>">
     <style>
         :root {
             --primary: #0ea5e9;
@@ -32,6 +34,8 @@
             line-height: 1.6;
             overflow-x: hidden;
             min-height: 100vh;
+            position: relative;
+            padding-bottom: 60px; /* Space for footer */
         }
 
         .app-container {
@@ -40,15 +44,15 @@
             padding: 20px;
             display: grid;
             grid-template-columns: 1fr 1.5fr;
-            grid-template-rows: auto 1fr auto; /* Added auto for facts panel row */
+            grid-template-rows: auto 1fr auto;
             gap: 20px;
-            min-height: 100vh;
+            min-height: calc(100vh - 60px); /* Adjust for footer */
         }
 
         @media (max-width: 1024px) {
             .app-container {
                 grid-template-columns: 1fr;
-                grid-template-rows: auto auto 1fr auto; /* Added auto for facts panel row */
+                grid-template-rows: auto auto 1fr auto;
             }
         }
 
@@ -210,6 +214,15 @@
             gap: 10px;
         }
 
+        .local-time {
+            font-size: 16px;
+            opacity: 0.8;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
         .weather-condition {
             display: flex;
             align-items: center;
@@ -298,7 +311,7 @@
             margin: 8px 0;
         }
 
-        /* Facts Panel - UPDATED */
+        /* Facts Panel */
         .facts-panel {
             background: var(--panel-bg);
             backdrop-filter: blur(10px);
@@ -307,9 +320,9 @@
             box-shadow: var(--shadow);
             border: 1px solid rgba(255, 255, 255, 0.1);
             animation: slideUp 0.7s ease-out;
-            grid-column: 1 / -1; /* Make it span all columns */
-            width: 100%; /* Ensure it takes full width */
-            margin-top: 0; /* Remove previous margin-top as we're using grid gap */
+            grid-column: 1 / -1;
+            width: 100%;
+            margin-top: 0;
         }
 
         .facts-header {
@@ -321,6 +334,31 @@
 
         .facts-content {
             line-height: 1.6;
+        }
+
+        /* Improved Load Information Button */
+        #moreBtn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #moreBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(14, 165, 233, 0.4);
+        }
+
+        #moreBtn:active {
+            transform: translateY(0);
         }
 
         /* Animations */
@@ -372,6 +410,25 @@
             box-shadow: 0 0 40px 15px rgba(251, 191, 36, 0.4);
             transform: translate(-50%, -50%);
             animation: pulse 3s infinite;
+        }
+
+        .moon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 50px;
+            height: 50px;
+            background: #e5e7eb;
+            border-radius: 50%;
+            box-shadow: 0 0 20px 5px rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+        }
+
+        .moon-phase {
+            position: absolute;
+            background: #1e293b;
+            border-radius: 50%;
+            transition: all 1s ease;
         }
 
         .cloud {
@@ -532,6 +589,31 @@
             place-items: center;
             box-shadow: var(--shadow);
         }
+
+        /* Footer */
+        footer {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            padding: 15px;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(10px);
+            font-size: 14px;
+            color: var(--panel-text);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        footer a {
+            color: var(--primary);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        footer a:hover {
+            color: var(--secondary);
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -562,6 +644,10 @@
         <div class="weather-panel">
             <div class="current-weather">
                 <h2 class="city-name"><span id="cityName">—</span> <span id="countryFlag"></span></h2>
+                <div class="local-time">
+                    <span id="timeIcon">🕒</span>
+                    <span id="localTime">—</span>
+                </div>
                 <div class="weather-condition">
                     <span class="weather-icon" id="weatherIcon">🌤</span>
                     <span id="conditionText">—</span>
@@ -602,7 +688,14 @@
         <div class="facts-panel">
             <div class="facts-header">
                 <h3>📍 City Facts</h3>
-                <button id="moreBtn">Load Information</button>
+                <button id="moreBtn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="16"></line>
+                        <line x1="8" y1="12" x2="16" y2="12"></line>
+                    </svg>
+                    Load Information
+                </button>
             </div>
             <div class="facts-content" id="cityFacts">
                 Click the button to load interesting facts about this city.
@@ -610,13 +703,17 @@
         </div>
     </div>
 
+    <footer>
+        Made by Sivaprakasam | <a href="https://github.com/Sivaprakasamsiva/Weather-Map.git" target="_blank">Weather Map GitHub</a>
+    </footer>
+
     <button class="console-toggle" id="consoleToggle">📟</button>
     <div class="debug-console" id="debugConsole"></div>
 
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script>
         // Configuration
-        const WEATHER_API_KEY = "Enter Your API Key";
+        const WEATHER_API_KEY = "Enter Your Open Wether API";
         const debugConsole = document.getElementById('debugConsole');
         const consoleToggle = document.getElementById('consoleToggle');
         
@@ -651,6 +748,7 @@
 
         let cityLayer = null;
         let animMarker = null;
+        let localTimeInterval = null;
 
         // UI Elements
         const cityInput = document.getElementById('cityInput');
@@ -659,6 +757,8 @@
 
         const nameEl = document.getElementById('cityName');
         const countryFlagEl = document.getElementById('countryFlag');
+        const localTimeEl = document.getElementById('localTime');
+        const timeIconEl = document.getElementById('timeIcon');
         const condEl = document.getElementById('conditionText');
         const weatherIconEl = document.getElementById('weatherIcon');
         const tempEl = document.getElementById('temp');
@@ -810,6 +910,7 @@
         async function selectPlace(place) {
             debugLog(`Place selected: ${place.display_name}`);
             clearCityLayers();
+            clearLocalTimeInterval();
 
             const lat = parseFloat(place.lat);
             const lon = parseFloat(place.lon);
@@ -934,19 +1035,31 @@
                     countryFlagEl.textContent = getFlagEmoji(countryCode.toUpperCase());
                 }
                 
+                // Update local time display
+                updateLocalTime(data.timezone);
+                
                 condEl.textContent = `${label}${desc && label.toLowerCase() !== desc.toLowerCase() ? ` (${desc})` : ''}`;
-                weatherIconEl.textContent = icon;
+                
+                // Determine if it's day or night and update icon accordingly
+                const isDayTime = isDay(data.sys.sunrise, data.sys.sunset);
+                let weatherIcon = icon;
+                
+                if (main.includes('clear')) {
+                    weatherIcon = isDayTime ? '☀️' : getMoonPhaseEmoji();
+                }
+                
+                weatherIconEl.textContent = weatherIcon;
                 tempEl.textContent = `${Math.round(data.main?.temp ?? 0)}°C`;
                 humEl.textContent = `${Math.round(data.main?.humidity ?? 0)}%`;
                 windEl.textContent = `${Math.round(data.wind?.speed ?? 0)} m/s`;
                 feelsLikeEl.textContent = `${Math.round(data.main?.feels_like ?? 0)}°C`;
 
                 // Add weather animation
-                addWeatherAnimation(anim);
+                addWeatherAnimation(isDayTime ? anim : 'night');
 
                 // Animation marker at center of city bounds (or lat/lon)
                 const center = cityLayer ? cityLayer.getBounds().getCenter() : L.latLng(lat, lon);
-                addMapAnimation(center, anim);
+                addMapAnimation(center, isDayTime ? anim : 'night');
 
                 // More facts
                 moreBtn.onclick = () => fetchFacts(displayName.split(',')[0] || displayName);
@@ -956,6 +1069,81 @@
             } catch (err) {
                 console.error(err);
                 debugLog('Weather fetch failed: ' + err.message);
+            }
+        }
+
+        // Check if it's currently daytime
+        function isDay(sunrise, sunset) {
+            const now = Math.floor(Date.now() / 1000);
+            return now > sunrise && now < sunset;
+        }
+
+        // Get moon phase emoji based on current date
+        function getMoonPhaseEmoji() {
+            // Calculate approximate moon phase based on current date
+            const knownNewMoon = new Date('2023-01-21').getTime(); // A known new moon date
+            const lunarCycle = 29.53 * 24 * 60 * 60 * 1000; // Lunar cycle in milliseconds
+            
+            const daysSinceNewMoon = (Date.now() - knownNewMoon) % lunarCycle;
+            const moonAge = Math.floor(daysSinceNewMoon / (lunarCycle / 28));
+            
+            // Return appropriate moon phase emoji
+            if (moonAge < 1) return '🌑'; // New moon
+            if (moonAge < 7) return '🌒'; // Waxing crescent
+            if (moonAge < 8) return '🌓'; // First quarter
+            if (moonAge < 14) return '🌔'; // Waxing gibbous
+            if (moonAge < 15) return '🌕'; // Full moon
+            if (moonAge < 21) return '🌖'; // Waning gibbous
+            if (moonAge < 22) return '🌗'; // Last quarter
+            return '🌘'; // Waning crescent
+        }
+
+        // Update local time display
+        function updateLocalTime(timezoneOffset) {
+            // Clear any existing interval
+            clearLocalTimeInterval();
+            
+            // Update time immediately
+            updateTimeDisplay(timezoneOffset);
+            
+            // Set up interval to update time every second
+            localTimeInterval = setInterval(() => {
+                updateTimeDisplay(timezoneOffset);
+            }, 1000);
+        }
+        
+        function updateTimeDisplay(timezoneOffset) {
+            // Convert timezone offset from seconds to minutes
+            const offsetMinutes = timezoneOffset / 60;
+            
+            // Create date with timezone offset
+            const now = new Date();
+            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+            const localTime = new Date(utc + (offsetMinutes * 60000));
+            
+            // Format time
+            const timeStr = localTime.toLocaleTimeString([], { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            
+            // Update time display
+            localTimeEl.textContent = timeStr;
+            
+            // Update time icon based on time of day
+            const hours = localTime.getHours();
+            if (hours >= 6 && hours < 18) {
+                timeIconEl.textContent = '☀️';
+            } else {
+                timeIconEl.textContent = '🌙';
+            }
+        }
+        
+        function clearLocalTimeInterval() {
+            if (localTimeInterval) {
+                clearInterval(localTimeInterval);
+                localTimeInterval = null;
             }
         }
 
@@ -999,6 +1187,15 @@
                     <div class="snowflake"></div>
                     <div class="snowflake"></div>
                     <div class="snowflake"></div>
+                `;
+            } else if (type === 'night') {
+                // Create moon with phase
+                const moonPhase = getMoonPhaseEmoji();
+                weatherAnimationEl.innerHTML = `
+                    <div class="moon"></div>
+                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 40px;">
+                        ${moonPhase}
+                    </div>
                 `;
             } else {
                 // Default clouds
@@ -1061,6 +1258,11 @@
                     <div class="snowflake"></div>
                     <div class="snowflake"></div>
                 </div>`;
+            }
+            
+            if (type === 'night') {
+                const moonPhase = getMoonPhaseEmoji();
+                return `<div class="weather-anim" style="font-size: 24px;">${moonPhase}</div>`;
             }
             
             // Default clouds
@@ -1171,7 +1373,16 @@
 
         // Initialize with a popular city
         setTimeout(() => {
-            searchFromInput('London');
+            // Create a mock London place object for initialization
+            const londonPlace = {
+                display_name: "London, UK",
+                lat: "51.5074",
+                lon: "-0.1278",
+                address: {
+                    country_code: "gb"
+                }
+            };
+            selectPlace(londonPlace);
         }, 1000);
 
         // Add some sample forecast data for initial display
