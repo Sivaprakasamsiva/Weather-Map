@@ -4,7 +4,7 @@ A sleek, full-stack web application that visualizes real-time weather data and f
 
 https://darling-bubblegum-d596d4.netlify.app/ 
 
-<img width="1862" height="941" alt="image" src="https://github.com/user-attachments/assets/cb191182-dbb7-4769-950b-a50fc351846a" />
+<img width="1163" height="870" alt="image" src="https://github.com/user-attachments/assets/2a3e8e0b-c175-468c-a14e-17031ba4ad6e" />
 
 
 ✨ Features
