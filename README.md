@@ -2,7 +2,7 @@
 🌤️ Interactive Weather Map
 A sleek, full-stack web application that visualizes real-time weather data and forecasts on an interactive map. Built with vanilla JavaScript and Leaflet.js, it provides users with a dynamic and engaging way to explore global weather conditions.
 
-https://darling-bubblegum-d596d4.netlify.app/ 
+https://darling-weathermappro-d596d4.netlify.app/
 
 <img width="1163" height="870" alt="image" src="https://github.com/user-attachments/assets/2a3e8e0b-c175-468c-a14e-17031ba4ad6e" />
 
